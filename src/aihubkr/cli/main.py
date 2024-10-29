@@ -3,12 +3,11 @@ import os
 import sys
 from typing import Any, Dict
 
-from prettytable import PrettyTable
-
 from core.auth import AIHubAuth
 from core.config import AIHubConfig
 from core.downloader import AIHubDownloader
 from core.filelist_parser import AIHubResponseParser, sizeof_fmt
+from prettytable import PrettyTable
 
 
 def parse_arguments() -> Dict[str, Any]:
