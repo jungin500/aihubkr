@@ -3,6 +3,10 @@ import os
 import re
 import sys
 
+from core.auth import AIHubAuth
+from core.config import AIHubConfig
+from core.downloader import AIHubDownloader
+from core.filelist_parser import AIHubResponseParser, sizeof_fmt
 from natsort import natsorted
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout,
@@ -10,11 +14,6 @@ from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout,
                              QMessageBox, QProgressBar, QPushButton,
                              QTableWidget, QTableWidgetItem, QTextEdit,
                              QVBoxLayout, QWidget)
-
-from core.auth import AIHubAuth
-from core.config import AIHubConfig
-from core.downloader import AIHubDownloader
-from core.filelist_parser import AIHubResponseParser, sizeof_fmt
 
 
 class DownloadThread(QThread):
@@ -55,6 +54,10 @@ class AIHubDownloaderGUI(QMainWindow):
         self.search_query = AIHubDownloaderGUI.DATASET_SEARCH_DEFAULT_QUERY
         self.file_db = {}
         self.is_downloading = False
+
+        self.current_dataset_id = None
+        self.current_dataset_title = None
+        self.current_total_file_size = 0
 
         # Authentication
         self.auth = AIHubAuth(None, None)
@@ -141,11 +144,6 @@ class AIHubDownloaderGUI(QMainWindow):
         self.layout.addWidget(self.dataset_table)
 
         # Table for file list
-        dataset_description_layout = QHBoxLayout()
-        self.dataset_description = QLabel("Dataset: Please choose dataset from above list.")
-        dataset_description_layout.addWidget(self.dataset_description)
-        self.layout.addLayout(dataset_description_layout)
-
         self.file_list_table = QTableWidget()
         self.file_list_table.setColumnCount(4)  # Select checkbox, Key, Filename, Estimated Size (Max size)
         self.file_list_table.setHorizontalHeaderLabels(["", "File Key", "File Name", "File Size"])
@@ -160,6 +158,15 @@ class AIHubDownloaderGUI(QMainWindow):
         self.file_list_table.cellChanged.connect(self.on_checkbox_changed)
         self.file_list_table.keyPressEvent = self.toggle_filekey
         self.layout.addWidget(self.file_list_table)
+
+        # Data description
+        dataset_description_layout = QHBoxLayout()
+        self.dataset_description = QLabel("Dataset: Please choose dataset from above list.")
+        self.dataset_size_description = QLabel("N/A")
+        self.dataset_size_description.setAlignment(Qt.AlignmentFlag.AlignRight)
+        dataset_description_layout.addWidget(self.dataset_description)
+        dataset_description_layout.addWidget(self.dataset_size_description)
+        self.layout.addLayout(dataset_description_layout)
 
         # Disable normal close behaviour (X button, or ALT+F4)
         self.closeEvent = self.on_close
@@ -226,12 +233,26 @@ class AIHubDownloaderGUI(QMainWindow):
                              if self.file_list_table.item(row_idx, 0).checkState() == Qt.CheckState.Checked])
         if checked_items == table_item_counts:
             self.file_keys_input.setText("all")
+            self.dataset_description.setText(
+                f"Selected Dataset: ({self.current_dataset_id}) {self.current_dataset_title}")
+            self.dataset_size_description.setText(
+                f"Selected: {sizeof_fmt(self.current_total_file_size)} / Total: {sizeof_fmt(self.current_total_file_size)}"
+            )
             return
 
         file_keys = []
+        selected_file_size = 0
         for row_idx in range(table_item_counts):
             if self.file_list_table.item(row_idx, 0).checkState() == Qt.CheckState.Checked:
-                file_keys.append(self.file_list_table.item(row_idx, 1).text())
+                file_key = self.file_list_table.item(row_idx, 1).text()
+                file_keys.append(file_key)
+                selected_file_size += self.file_db.get(file_key, (None, 0, 0, 0))[1]
+
+        self.dataset_description.setText(
+            f"Selected Dataset: ({self.current_dataset_id}) {self.current_dataset_title}")
+        self.dataset_size_description.setText(
+            f"Selected: {sizeof_fmt(selected_file_size)} / Total: {sizeof_fmt(self.current_total_file_size)}"
+        )
         self.file_keys_input.setText(",".join(file_keys))
 
     def toggle_filekey(self, event):
@@ -258,13 +279,13 @@ class AIHubDownloaderGUI(QMainWindow):
             return
 
         # Update input form
-        dataset_id = selected_items[0].text()
-        dataset_title = selected_items[1].text()
-        self.dataset_description.setText(f"Dataset: ({dataset_id}) {dataset_title}")
-        self.dataset_key_input.setText(dataset_id)
+        self.current_dataset_id = selected_items[0].text()
+        self.current_dataset_title = selected_items[1].text()
+        self.dataset_description.setText(f"Selected Dataset: ({self.current_dataset_id}) {self.current_dataset_title}")
+        self.dataset_key_input.setText(self.current_dataset_id)
 
         # Fetch file list
-        file_tree = self.downloader.get_file_tree(dataset_id)
+        file_tree = self.downloader.get_file_tree(self.current_dataset_id)
         if file_tree:
             # Unlink the signal first
             self.file_list_table.cellChanged.disconnect(self.on_checkbox_changed)
@@ -283,9 +304,9 @@ class AIHubDownloaderGUI(QMainWindow):
                 self.file_list_table.setRowCount(len(file_paths))
                 self.file_db.clear()
 
-                total_file_size = 0
+                self.current_total_file_size = 0
                 for row, (path, _, file_key, (file_display_size, file_min_size, file_max_size)) in enumerate(file_paths):
-                    total_file_size += file_display_size
+                    self.current_total_file_size += file_display_size
                     # Append to File DB
                     self.file_db[file_key] = (path, file_display_size, file_min_size, file_max_size)
 
@@ -309,7 +330,20 @@ class AIHubDownloaderGUI(QMainWindow):
 
                 # Update total file size
                 self.dataset_description.setText(
-                    f"Dataset: ({dataset_id}) {dataset_title} ({sizeof_fmt(total_file_size)})")
+                    f"Selected Dataset: ({self.current_dataset_id}) {self.current_dataset_title}")
+                self.dataset_size_description.setText(
+                    f"Selected Total: {sizeof_fmt(self.current_total_file_size)}"
+                )
+        else:
+            # Failed fetching file tree
+            dialog = QMessageBox(self)
+            dialog.setWindowTitle("Error")
+            dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+            dialog.setIcon(QMessageBox.Icon.Warning)
+            dialog.setText(
+                f"Failed fetching '({self.current_dataset_id}) {self.current_dataset_title}'."
+            )
+            dialog.exec()
         self.file_list_table.cellChanged.connect(self.on_checkbox_changed)
 
     def search_dataset(self, value):
