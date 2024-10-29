@@ -1,0 +1,6 @@
+# Python cache file
+**/__pycache__/
+*.pyc
+*.egg-info/
+*.ipynb
+.vscode/
