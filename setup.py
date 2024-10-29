@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 def get_version() -> str:
     rel_path = "src/aihubkr/__init__.py"
-    with open(rel_path, "r") as fp:
+    with open(rel_path, "r", encoding="utf-8") as fp:
         for line in fp.read().splitlines():
             if line.startswith("__version__"):
                 delim = '"' if '"' in line else "'"
@@ -15,21 +15,13 @@ install_requires = [
     "requests",
     "tqdm",
     "natsort",
-]
 
-extras = {}
-
-extras["cli"] = [
+    # CLI
     "prettytable",
-]
 
-extras["gui"] = [
+    # GUI
     "PyQt6",
 ]
-
-extras["all"] = extras["cli"] + extras["gui"]
-
-extras["dev"] = extras["all"]
 
 setup(
     name="aihubkr",
@@ -44,7 +36,6 @@ setup(
     url="https://github.com/jungin500/aihubkr",
     package_dir={"": "src"},
     packages=find_packages("src"),
-    extras_require=extras,
     entry_points={
         "console_scripts": ["aihubkr-gui=aihubkr.gui.main:main", "aihubkr-dl=aihubkr.cli.main:main"],
     },
