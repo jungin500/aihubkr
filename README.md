@@ -9,7 +9,7 @@ _(비공식) NIPA AIHub (aihub.or.kr) Downloader CLI & GUI 유틸리티_
 
 ## Installation
 ```bash
-pip3 install git+https://git.dailylime.dev/jungin500/aihubkr.git@v0.1.0
+pip3 install git+https://github.com/jungin500/aihubkr.git@v0.1.0
 ```
 
 ## Usage
