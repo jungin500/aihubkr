@@ -82,11 +82,11 @@ def list_file_tree(downloader: AIHubDownloader, dataset_key: str) -> None:
 
 
 def download_dataset(
-    downloader: AIHubDownloader, dataset_key: str, file_keys: str, output_dir: str, required_disk_space: int
+    downloader: AIHubDownloader, dataset_key: str, file_keys: str, output_dir: str
 ) -> None:
     print(f"Downloading dataset {dataset_key}, file key(s): {file_keys}")
     print(" --> dataset.tar ...")
-    success = downloader.download_and_process_dataset(dataset_key, file_keys, output_dir, required_disk_space)
+    success = downloader.download_and_process_dataset(dataset_key, file_keys, output_dir)
     if success:
         print("Download completed successfully.")
     else:
@@ -217,7 +217,7 @@ def main() -> None:
 
         # Create a new downloader with authentication headers
         downloader = AIHubDownloader(auth_headers)
-        download_dataset(downloader, args["datasetkey"], args["filekey"], args["output"], max_total_size)
+        download_dataset(downloader, args["datasetkey"], args["filekey"], args["output"])
     else:
         print("Invalid mode. Use -help for usage information.")
 
