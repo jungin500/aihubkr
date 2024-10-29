@@ -1,9 +1,12 @@
 <center>
-
+  
 # aihubkr
-
-_(비공식) NIPA AIHub (aihub.or.kr) Downloader CLI & GUI 유틸리티_
+  
 </center>
+
+<p align="center"><img width="480" alt="image" src="https://github.com/user-attachments/assets/f694dc2d-12fc-4d32-af47-ca1f448c5e56"> <img width="480" alt="image" src="https://github.com/user-attachments/assets/6251aeaa-6e7b-4687-a236-8af08f6b9d93"></p>
+
+<p align="center"><i>(비공식) NIPA AIHub (aihub.or.kr) Downloader CLI & GUI 유틸리티</i></p>
 
 ---
 
@@ -14,7 +17,6 @@ pip3 install git+https://github.com/jungin500/aihubkr.git@v0.1.0
 
 ## Usage
 ### AIHub GUI
-
 ```bash
 aihubkr-gui
 ```
