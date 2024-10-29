@@ -12,7 +12,7 @@
 
 ## Installation
 ```bash
-pip3 install git+https://github.com/jungin500/aihubkr.git@v0.1.0
+pip3 install git+https://github.com/jungin500/aihubkr.git@main
 ```
 
 ## Usage
