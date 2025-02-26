@@ -3,10 +3,10 @@ import os
 import re
 import sys
 
-from core.auth import AIHubAuth
-from core.config import AIHubConfig
-from core.downloader import AIHubDownloader
-from core.filelist_parser import AIHubResponseParser, sizeof_fmt
+from aihubkr.core.auth import AIHubAuth
+from aihubkr.core.config import AIHubConfig
+from aihubkr.core.downloader import AIHubDownloader
+from aihubkr.core.filelist_parser import AIHubResponseParser, sizeof_fmt
 from natsort import natsorted
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout,

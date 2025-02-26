@@ -184,7 +184,22 @@ class AIHubDownloader:
     def download_dataset(
         self, dataset_key: str, file_keys: str = "all", output_dir: str = "."
     ) -> bool:
-        """Download a dataset using requests."""
+        """
+        Download a dataset from AIHub.
+        
+        Downloads the specified dataset using the requests library and saves it
+        as a tar file in the specified output directory.
+        
+        Args:
+            dataset_key (str): The unique identifier for the dataset to download.
+            file_keys (str, optional): Specific file keys to download. Defaults to "all"
+                                      which downloads the entire dataset.
+            output_dir (str, optional): Directory where the dataset will be saved.
+                                       Defaults to the current directory.
+        
+        Returns:
+            bool: True if the download was successful, False otherwise.
+        """
 
         # Check for available disk space before downloading
 
@@ -228,5 +243,17 @@ class AIHubDownloader:
             return False
 
     def get_raw_url(self, dataset_key: str, file_keys: str = "all") -> str:
-        """Get the raw download URL for a dataset."""
+        """
+        Get the raw download URL for a dataset.
+        
+        This method constructs the URL for downloading a dataset directly.
+        
+        Args:
+            dataset_key (str): The unique identifier for the dataset.
+            file_keys (str, optional): Specific file keys to include in the URL.
+                                      Defaults to "all".
+            
+        Returns:
+            str: The raw download URL.
+        """
         return f"{self.BASE_DOWNLOAD_URL}/{dataset_key}.do?fileSn={file_keys}"
