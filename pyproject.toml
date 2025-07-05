@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aihubkr-dl"
+dynamic = ["version"]
+description = "(비공식) NIPA AIHub (aihub.or.kr) Downloader CLI & GUI 유틸리티"
+readme = "README.md"
+license = {text = "Apache"}
+authors = [
+    {name = "An Jung-In", email = "ji5489@gmail.com"}
+]
+maintainers = [
+    {name = "An Jung-In", email = "ji5489@gmail.com"}
+]
+keywords = ["aihubkr", "aihub", "machine-learning", "deep-learning", "datasets"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.8.0"
+dependencies = [
+    "requests",
+    "tqdm",
+    "prettytable",
+    "PyQt6",
+]
+
+[project.urls]
+Homepage = "https://github.com/jungin500/aihubkr-dl"
+Repository = "https://github.com/jungin500/aihubkr-dl"
+Issues = "https://github.com/jungin500/aihubkr-dl/issues"
+
+[project.scripts]
+aihubkr-gui = "aihubkr.gui.main:main"
+aihubkr-dl = "aihubkr.cli.main:main"
+
+[tool.setuptools]
+package-dir = {"aihubkr" = "src/aihubkr"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "aihubkr.__version__"}
+
+[tool.setuptools.package-data]
+"*" = ["*"] 
