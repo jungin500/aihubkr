@@ -1,5 +1,4 @@
 requests
 tqdm
 PyQt6
-natsort
 prettytable

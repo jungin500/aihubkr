@@ -14,7 +14,6 @@ def get_version() -> str:
 install_requires = [
     "requests",
     "tqdm",
-    "natsort",
 
     # CLI
     "prettytable",

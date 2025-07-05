@@ -10,6 +10,9 @@ class AIHubConfig:
 
     @staticmethod
     def get_instance():
+        if AIHubConfig._instance is None:
+            AIHubConfig._instance = AIHubConfig()
+            AIHubConfig._instance.config_db = AIHubConfig._instance.load_from_disk()
         return AIHubConfig._instance
 
     def __init__(self):
@@ -20,21 +23,20 @@ class AIHubConfig:
             raise RuntimeError("Singleton class. Use get_instance() instead.")
 
         if not os.path.exists(AIHubConfig.CONFIG_PATH):
-            return {}
+            self.config_db = {}
+            return True
 
         try:
             with open(AIHubConfig.CONFIG_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            config_db = {}
+            self.config_db = {}
             for key in data.keys():
-                config_db[key] = base64.b64decode(data.get(key)).decode()
-            return config_db
+                self.config_db[key] = base64.b64decode(data.get(key)).decode()
+            return True
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(
-                f"Failed to load credential file at {AIHubConfig.CONFIG_PATH}: {e}"
-            )
-            return {}
+            self.config_db = {}
+            return False
 
     def save_to_disk(self) -> None:
         if self != AIHubConfig._instance:
@@ -58,9 +60,3 @@ class AIHubConfig:
         if save and os.path.exists(AIHubConfig.CONFIG_PATH):
             os.remove(AIHubConfig.CONFIG_PATH)
         self.config_db = {}
-
-
-# Initialize the singleton instance
-if AIHubConfig._instance is None:
-    AIHubConfig._instance = AIHubConfig()
-    AIHubConfig._instance.config_db = AIHubConfig._instance.load_from_disk()

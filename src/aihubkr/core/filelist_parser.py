@@ -66,17 +66,15 @@ class AIHubResponseParser:
 
             # Assume the root directory is on the first line
             root = body_lines[0].replace("└─", "").strip()
-            # print(f"Root: {root}")
             tree = parent = node = AIHubResponseParser.Node(path=Path(root))
 
             # Parse lines one by one
             for idx, line in enumerate(body_lines[1:]):
                 # Split the tree formatting prefix and the path for lines like:
                 # │   │       │   ├── 1.51.51.5_rotated.4dfp.ifh
-                # TODO: any corner cases missed with this oversimple regex?
+                # Note: This regex handles the expected format, but may need updates for edge cases
                 match = re.match("(.*?─+ ?)(.*)", line)
                 if match is None:
-                    print(f"Line {repr(line)} didn't match")
                     continue
 
                 prefix, path = match.groups()
@@ -87,15 +85,13 @@ class AIHubResponseParser:
                 file_max_possible_size = None
                 file_key = None
                 if " | " in path:
-                    data_match = re.match("(.*) \| (\d+ [KMGT]?B) \| (\d+)", path)
+                    data_match = re.match(r"(.*) \| (\d+ [KMGT]?B) \| (\d+)", path)
                     if data_match is None:
-                        print(f"Path {path} is not a leaf node and have | character (Invalid).")
                         continue
                     path, size_iec, file_key = data_match.groups()
 
-                    size_match = re.match("(\d+) ([KMGT]?)B", size_iec)
+                    size_match = re.match(r"(\d+) ([KMGT]?)B", size_iec)
                     if size_match is None:
-                        print(f"Size {size_iec} is not in IEC format.")
                         continue
                     size, unit = size_match.groups()
 
@@ -104,25 +100,19 @@ class AIHubResponseParser:
                     file_min_possible_size = int((int(size) - 0.5) * 1024 ** (" KMGT".index(unit)))
                     file_max_possible_size = int((int(size) + 1.0) * 1024 ** (" KMGT".index(unit)))
 
-                    # print(
-                    #     f"Size: {size_iec} / RawSize: '{size}' / Unit: '{unit}' / {file_min_possible_size} ~ {file_max_possible_size}")
-
                 path = Path(path.strip())
 
                 if "├─" in prefix:
                     idx = prefix.rfind("├─")
                     if len(prefix) - 2 != idx:
-                        print(f"Invalid line {idx:04d}:{prefix}")
                         continue
                     prefix_len = idx
                 elif "└─" in prefix:
                     idx = prefix.rfind("└─")
                     if len(prefix) - 2 != idx:
-                        print(f"Invalid line {idx:04d}:{prefix}")
                         continue
                     prefix_len = idx
                 else:
-                    print(f"Invalid line {idx:04d}:{prefix}")
                     continue
 
                 # Remove heading empty spaces
@@ -165,6 +155,4 @@ class AIHubResponseParser:
                     paths.append((str(node.full_path()), False, None, None))
             return tree, paths
         except Exception as e:
-            print(body)
-            print(f"Error parsing tree output: {e}")
             return None, None

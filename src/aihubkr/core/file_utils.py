@@ -21,7 +21,6 @@ def merge_part_files(directory: str) -> None:
         base_name = os.path.splitext(part_files[0])[0]
         merged_file = os.path.join(root, base_name)
 
-        print(f"Merging parts for {base_name}")
         with open(merged_file, "wb") as outfile:
             for part in part_files:
                 part_path = os.path.join(root, part)
