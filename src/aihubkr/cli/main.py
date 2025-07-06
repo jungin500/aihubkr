@@ -154,9 +154,12 @@ def list_datasets(downloader: AIHubDownloader) -> None:
 def list_file_tree(downloader: AIHubDownloader, dataset_key: str) -> None:
     """List file tree structure for a specific dataset."""
     print(f"Fetching file tree for dataset: {dataset_key}")
-    file_tree = downloader.get_file_tree(dataset_key)
+    file_tree, error_message = downloader.get_file_tree(dataset_key)
+    if error_message:
+        print(f"Error: {error_message}")
+        return
     if not file_tree:
-        print("Failed to fetch file tree.")
+        print("No files found.")
         return
 
     # Parse file tree
@@ -182,7 +185,6 @@ def list_file_tree(downloader: AIHubDownloader, dataset_key: str) -> None:
             table.add_row(["-", path, "-"], divider=idx == len(paths) - 1)
 
     table.add_row(["", "Total File Size", sizeof_fmt(total_file_size)])
-
     print(table)
 
 
@@ -305,57 +307,61 @@ def prompt_api_key() -> str:
 
 
 def main() -> None:
-    args = parse_arguments()
+    try:
+        args = parse_arguments()
 
-    # Handle help command
-    if args["command"] == "help":
-        print_usage()
+        # Handle help command
+        if args["command"] == "help":
+            print_usage()
+            return
+
+        # Get API key
+        api_key = args.get("api_key")
+        if not api_key:
+            # Try to get from environment variable
+            api_key = os.environ.get("AIHUB_APIKEY")
+
+        if not api_key:
+            # Try to load from saved credentials
+            auth = AIHubAuth()
+            api_key = auth.load_credentials()
+
+        if not api_key:
+            # Prompt user for API key
+            api_key = prompt_api_key()
+            auth = AIHubAuth(api_key)
+            auth.save_credential()
+        else:
+            auth = AIHubAuth(api_key)
+
+        # Validate API key
+        if not auth.validate_api_key():
+            print("Invalid API key. Please check your API key and try again.")
+            return
+
+        # Get authentication headers
+        auth_headers = auth.get_auth_headers()
+        if not auth_headers:
+            print("Failed to get authentication headers.")
+            return
+
+        # Create downloader with authentication
+        downloader = AIHubDownloader(auth_headers)
+
+        # Handle different commands
+        if args["command"] == "list":
+            list_datasets(downloader)
+        elif args["command"] == "files":
+            list_file_tree(downloader, args["dataset_key"])
+        elif args["command"] == "download":
+            file_keys = args.get("file_key", "all")
+            output_dir = args.get("output_dir", ".")
+            download_dataset(downloader, args["dataset_key"], file_keys, output_dir)
+        else:
+            print("Invalid command. Use --help for usage information.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
         return
-
-    # Get API key
-    api_key = args.get("api_key")
-    if not api_key:
-        # Try to get from environment variable
-        api_key = os.environ.get("AIHUB_APIKEY")
-
-    if not api_key:
-        # Try to load from saved credentials
-        auth = AIHubAuth()
-        api_key = auth.load_credentials()
-
-    if not api_key:
-        # Prompt user for API key
-        api_key = prompt_api_key()
-        auth = AIHubAuth(api_key)
-        auth.save_credential()
-    else:
-        auth = AIHubAuth(api_key)
-
-    # Validate API key
-    if not auth.validate_api_key():
-        print("Invalid API key. Please check your API key and try again.")
-        return
-
-    # Get authentication headers
-    auth_headers = auth.get_auth_headers()
-    if not auth_headers:
-        print("Failed to get authentication headers.")
-        return
-
-    # Create downloader with authentication
-    downloader = AIHubDownloader(auth_headers)
-
-    # Handle different commands
-    if args["command"] == "list":
-        list_datasets(downloader)
-    elif args["command"] == "files":
-        list_file_tree(downloader, args["dataset_key"])
-    elif args["command"] == "download":
-        file_keys = args.get("file_key", "all")
-        output_dir = args.get("output_dir", ".")
-        download_dataset(downloader, args["dataset_key"], file_keys, output_dir)
-    else:
-        print("Invalid command. Use --help for usage information.")
 
 
 if __name__ == "__main__":

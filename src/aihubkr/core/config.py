@@ -12,7 +12,7 @@ class AIHubConfig:
     def get_instance():
         if AIHubConfig._instance is None:
             AIHubConfig._instance = AIHubConfig()
-            AIHubConfig._instance.config_db = AIHubConfig._instance.load_from_disk()
+            AIHubConfig._instance.load_from_disk()
         return AIHubConfig._instance
 
     def __init__(self):

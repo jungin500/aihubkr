@@ -139,9 +139,12 @@ class FileTreeLoadThread(QThread):
         """Run file tree loading in background thread."""
         try:
             self.progress_started.emit()
-            file_tree = self.downloader.get_file_tree(self.dataset_key)
+            file_tree, error_message = self.downloader.get_file_tree(self.dataset_key)
+            if error_message:
+                self.error_occurred.emit(error_message)
+                return
             if not file_tree:
-                self.error_occurred.emit("Failed to fetch file tree.")
+                self.error_occurred.emit("No files found.")
                 return
 
             # Parse file tree
@@ -162,6 +165,18 @@ class FileTreeLoadThread(QThread):
             self.error_occurred.emit(f"Error loading file tree: {str(e)}")
         finally:
             self.progress_finished.emit()
+
+    def on_file_tree_load_error(self, error_message):
+        """Handle file tree loading error."""
+        self.log_status(error_message)
+        QMessageBox.warning(self, "Error", error_message)
+
+        # Reset UI state on error
+        self.dataset_description.setText(f"Dataset: {self.current_dataset_title}")
+        self.dataset_size_description.setText("N/A")
+        self.file_list_table.setRowCount(0)
+        self.file_db = {}
+        self.current_total_file_size = 0
 
 
 class APIKeyValidationThread(QThread):
@@ -219,6 +234,7 @@ class AIHubDownloaderGUI(QMainWindow):
         config_manager = AIHubConfig.get_instance()
         if not loaded_api_key and config_manager.config_db.get("api_key") is None and os.path.exists(
                 AIHubConfig.CONFIG_PATH):
+            os.remove(AIHubConfig.CONFIG_PATH)
             QMessageBox.information(
                 self, "Credential Migration",
                 "Your saved API key credential was from an old version and has been reset. Please re-enter your API key.")

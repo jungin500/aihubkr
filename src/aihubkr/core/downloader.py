@@ -107,26 +107,22 @@ class AIHubDownloader:
         else:
             return False, None
 
-    def get_file_tree(self, dataset_key: str) -> Optional[str]:
-        """Fetch file tree structure for a specific dataset."""
+    def get_file_tree(self, dataset_key: str) -> Tuple[Optional[str], Optional[str]]:
+        """Fetch file tree structure for a specific dataset. Returns (content, error_message)."""
         url = f"{self.BASE_FILETREE_URL}/{dataset_key}.do"
         try:
-            response = requests.get(url, timeout=30)  # Add 30 second timeout
+            response = requests.get(url, timeout=30)
+            if response.status_code == 403:
+                return None, f"Dataset {dataset_key} is not available on the server (HTTP 403 Forbidden)."
             success, content = self._process_response(response)
             if success:
-                return content
+                return content, None
             else:
-                # Remove print statement - let calling code handle errors
-                # print(f"Failed to fetch file tree. Status code: {response.status_code}")
-                return None
+                return None, f"Failed to fetch file tree. Status code: {response.status_code}"
         except requests.Timeout:
-            # Remove print statement - let calling code handle errors
-            # print("Timeout while fetching file tree")
-            return None
+            return None, "Timeout while fetching file tree."
         except requests.RequestException as e:
-            # Remove print statement - let calling code handle errors
-            # print(f"Request failed while fetching file tree: {e}")
-            return None
+            return None, f"Network error: {e}"
 
     def process_dataset_list(self, content: str) -> List[Tuple[str, str]]:
         """Process the dataset list content."""

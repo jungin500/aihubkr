@@ -1,8 +1,8 @@
 # AIHubKR
 
 <p align="center">
-  <img width="480" alt="AIHubKR GUI" src="https://github.com/user-attachments/assets/03810426-f569-4012-8d33-67da69437214">
-  <img width="480" alt="AIHubKR CLI" src="https://github.com/user-attachments/assets/6d939826-70bf-4375-9abc-6625ee5d9a85">
+  <img width="400" alt="AIHubKR GUI" src="https://github.com/user-attachments/assets/03810426-f569-4012-8d33-67da69437214">
+  <img width="400" alt="AIHubKR GUI" src="https://github.com/user-attachments/assets/6d939826-70bf-4375-9abc-6625ee5d9a85">
 </p>
 
 <p align="center"><i>(비공식) NIPA AIHub (aihub.or.kr) Downloader CLI & GUI 유틸리티</i></p>

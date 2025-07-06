@@ -82,26 +82,29 @@ class AIHubAuth:
             # It's always 502 Bad gateway!
 
             response_body = response.text.strip()
-            success_candidates = ["요청하신", "파일"]
-            failure_candidates = ["인증", "권한"]
+            # Based on real API behavior, we need more specific patterns
+            # The API key validation endpoint always returns 502 with specific messages
+            # "요청하신 데이터셋의 파일이 존재하지 않습니다" means the key is valid but dataset -1 doesn't exist
+            success_candidates = [
+                "요청하신 파일을 다운로드할 수 있습니다",
+                "요청하신 데이터셋의 파일이 존재하지 않습니다"  # This is actually success for key validation
+            ]
+            failure_candidates = ["인증", "권한", "API", "키"]
 
             def check_success(body: str) -> bool:
                 """Check if the response body contains a success message."""
-                for candidate in success_candidates:
-                    if candidate in body:
-                        return True
-                return False
+                return any(candidate in body for candidate in success_candidates)
 
             def check_failure(body: str) -> bool:
                 """Check if the response body contains a failure message."""
-                for candidate in failure_candidates:
-                    if candidate in body:
-                        return True
-                return False
+                return any(candidate in body for candidate in failure_candidates)
 
-            if check_success(response_body):
+            success = check_success(response_body)
+            failure = check_failure(response_body)
+
+            if success:
                 return True
-            elif check_failure(response_body):
+            elif failure:
                 return False
             else:
                 # Invalid response - or API changed?
