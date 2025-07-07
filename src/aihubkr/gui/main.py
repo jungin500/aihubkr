@@ -16,6 +16,8 @@ import re
 import sys
 import webbrowser
 import time
+import platform
+import subprocess
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout,
@@ -280,6 +282,9 @@ class AIHubDownloaderGUI(QMainWindow):
         self.browse_button = QPushButton("Browse")
         self.browse_button.clicked.connect(self.browse_output_dir)
         output_layout.addWidget(self.browse_button)
+        self.open_folder_button = QPushButton("Open Folder")
+        self.open_folder_button.clicked.connect(self.open_output_folder)
+        output_layout.addWidget(self.open_folder_button)
         self.main_layout.addLayout(output_layout)
 
         # Download button
@@ -655,6 +660,28 @@ class AIHubDownloaderGUI(QMainWindow):
             config_manager.config_db["last_output_dir"] = dir_path
             config_manager.save_to_disk()
 
+    def open_output_folder(self):
+        """Open selected output directory."""
+        dir_path = self.output_dir_input.text().strip()
+        if not dir_path:
+            QMessageBox.warning(self, "Error", "Please enter an output directory.")
+            return
+
+        if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
+            QMessageBox.warning(self, "Error", "Output directory does not exist.")
+            return
+
+        system = platform.system()
+
+        if system == "Windows":
+            subprocess.run(["explorer", dir_path], check=True)
+        elif system == "Darwin":  # macOS
+            subprocess.run(["open", dir_path], check=True)
+        elif system == "Linux":
+            subprocess.run(["xdg-open", dir_path], check=True)
+        else:
+            raise NotImplementedError(f"Unsupported platform: {system}")
+
     def start_download(self):
         """Start the download process."""
         if self.is_downloading:
@@ -676,7 +703,7 @@ class AIHubDownloaderGUI(QMainWindow):
             QMessageBox.warning(self, "Error", "Please select an output directory.")
             return
 
-        if not os.path.exists(output_dir):
+        if not os.path.exists(output_dir) or not os.path.isdir(output_dir):
             QMessageBox.warning(self, "Error", "Output directory does not exist.")
             return
 
@@ -1075,9 +1102,6 @@ class AIHubDownloaderGUI(QMainWindow):
         # Disable cell editing
         self.file_list_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
-        # Log the UI state change
-        self.log_status("UI locked during download - scrolling still available")
-
     def enable_ui_after_download(self):
         """Re-enable UI elements after download completes."""
         # Re-enable buttons
@@ -1124,9 +1148,6 @@ class AIHubDownloaderGUI(QMainWindow):
 
         # Re-enable cell editing for checkboxes
         self.file_list_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-
-        # Log the UI state change
-        self.log_status("UI unlocked - all interactions restored")
 
     def blocked_keyPressEvent(self, event):
         """Block key press events during download while allowing scrolling."""

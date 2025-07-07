@@ -5,3 +5,9 @@
 *.ipynb
 .vscode/
 build/
+
+# Coverage
+coverage.xml
+
+# Artifacts
+aihub_datasets.csv
