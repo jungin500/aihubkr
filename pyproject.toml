@@ -66,7 +66,7 @@ where = ["src"]
 version = {attr = "aihubkr.__version__"}
 
 [tool.setuptools.package-data]
-"*" = ["*"]
+aihubkr = ["*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -79,7 +79,7 @@ addopts = [
     "--cov=src/aihubkr",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
-    "--cov-report=xml:coverage.xml",
+    "--cov-report=xml:coverage.xml"
 ]
 markers = [
     "unit: Unit tests",

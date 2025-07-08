@@ -1,15 +1,4 @@
-# AIHub API Testing Workflow
-# Runs comprehensive tests for AIHub API server with custom success/failure conditions
-#
-# - Unit and integration tests on every push/PR
-# - Real API tests when API key is available
-# - Coverage reporting and analysis
-# - Performance testing for API interactions
-#
-# @author Jung-In An <ji5489@gmail.com>
-# @with Claude Sonnet 4 (Cutoff 2025/06/16)
-
-name: AIHub API Tests
+name: test
 
 on:
   push:

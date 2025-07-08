@@ -43,10 +43,21 @@ import argparse
 import os
 import subprocess
 import sys
+import json
+import time
 from pathlib import Path
 
 
-def run_pytest_command(args, markers=None, verbose=False):
+def create_test_directories():
+    """Create directories for test results."""
+    directories = ["test-results", "performance-logs", "custom-condition-logs"]
+
+    for directory in directories:
+        Path(directory).mkdir(exist_ok=True)
+        print(f"Created directory: {directory}")
+
+
+def run_pytest_command(args, markers=None, verbose=False, log_file=None):
     """Run pytest with specified arguments and markers."""
     cmd = [sys.executable, "-m", "pytest"]
 
@@ -61,8 +72,31 @@ def run_pytest_command(args, markers=None, verbose=False):
     print(f"Running: {' '.join(cmd)}")
     print("-" * 80)
 
-    result = subprocess.run(cmd, cwd=Path(__file__).parent.parent)
-    return result.returncode
+    # Capture output if log_file is specified
+    if log_file:
+        result = subprocess.run(cmd, cwd=Path(__file__).parent.parent,
+                                capture_output=True, text=True)
+
+        # Write to log file
+        with open(log_file, "w") as f:
+            f.write(f"Command: {' '.join(cmd)}\n")
+            f.write(f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write("-" * 80 + "\n")
+            f.write("STDOUT:\n")
+            f.write(result.stdout)
+            if result.stderr:
+                f.write("\nSTDERR:\n")
+                f.write(result.stderr)
+
+        # Also print to console
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+
+        return result.returncode
+    else:
+        result = subprocess.run(cmd, cwd=Path(__file__).parent.parent)
+        return result.returncode
 
 
 def check_api_key():
@@ -85,7 +119,8 @@ def run_unit_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/unit-tests.log"
     )
 
 
@@ -98,7 +133,8 @@ def run_integration_tests(verbose=False):
     return run_pytest_command(
         ["tests/"],
         markers="integration",
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/integration-tests.log"
     )
 
 
@@ -114,10 +150,14 @@ def run_api_tests(verbose=False):
     print("Testing real AIHub API server interactions...")
     print("Note: These tests require internet connection and valid API key.")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/"],
         markers="api",
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/api-tests.log"
     )
 
 
@@ -127,9 +167,13 @@ def run_custom_conditions_tests(verbose=False):
     print("=" * 50)
     print("Testing custom validation logic for AIHub API responses...")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/test_api_integration.py::TestAIHubAPICustomConditions"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="custom-condition-logs/custom-conditions.log"
     )
 
 
@@ -143,9 +187,13 @@ def run_performance_tests(verbose=False):
         print("Skipping performance tests due to missing API key.")
         return 0
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/test_api_integration.py::TestAIHubAPIPerformance"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="performance-logs/performance-tests.log"
     )
 
 
@@ -157,7 +205,8 @@ def run_auth_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/test_auth.py"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/auth-tests.log"
     )
 
 
@@ -169,7 +218,8 @@ def run_downloader_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/test_downloader.py"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/downloader-tests.log"
     )
 
 
@@ -181,7 +231,8 @@ def run_parser_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/test_filelist_parser.py"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/parser-tests.log"
     )
 
 
@@ -193,7 +244,8 @@ def run_cli_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/test_cli.py"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/cli-tests.log"
     )
 
 
@@ -205,7 +257,8 @@ def run_coverage_tests(verbose=False):
 
     return run_pytest_command(
         ["tests/", "--cov=src/aihubkr", "--cov-report=term-missing", "--cov-report=html"],
-        verbose=verbose
+        verbose=verbose,
+        log_file="test-results/coverage-tests.log"
     )
 
 

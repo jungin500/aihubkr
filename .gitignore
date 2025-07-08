@@ -11,3 +11,6 @@ coverage.xml
 
 # Artifacts
 aihub_datasets.csv
+.coverage
+test-results/
+custom-condition-logs/
