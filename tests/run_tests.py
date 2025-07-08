@@ -117,6 +117,9 @@ def run_unit_tests(verbose=False):
     print("=" * 50)
     print("Testing individual module functionality...")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/"],
         verbose=verbose,
@@ -129,6 +132,9 @@ def run_integration_tests(verbose=False):
     print("Running Integration Tests")
     print("=" * 50)
     print("Testing end-to-end workflows with mocked API responses...")
+
+    # Create test directories
+    create_test_directories()
 
     return run_pytest_command(
         ["tests/"],
@@ -203,6 +209,9 @@ def run_auth_tests(verbose=False):
     print("=" * 50)
     print("Testing API key validation and authentication flows...")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/test_auth.py"],
         verbose=verbose,
@@ -215,6 +224,9 @@ def run_downloader_tests(verbose=False):
     print("Running Downloader Tests")
     print("=" * 50)
     print("Testing dataset download and file processing...")
+
+    # Create test directories
+    create_test_directories()
 
     return run_pytest_command(
         ["tests/test_downloader.py"],
@@ -229,6 +241,9 @@ def run_parser_tests(verbose=False):
     print("=" * 50)
     print("Testing tree structure parsing and file information extraction...")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/test_filelist_parser.py"],
         verbose=verbose,
@@ -242,6 +257,9 @@ def run_cli_tests(verbose=False):
     print("=" * 50)
     print("Testing command-line interface functionality...")
 
+    # Create test directories
+    create_test_directories()
+
     return run_pytest_command(
         ["tests/test_cli.py"],
         verbose=verbose,
@@ -254,6 +272,9 @@ def run_coverage_tests(verbose=False):
     print("Running Tests with Coverage")
     print("=" * 50)
     print("Testing with code coverage analysis...")
+
+    # Create test directories
+    create_test_directories()
 
     return run_pytest_command(
         ["tests/", "--cov=src/aihubkr", "--cov-report=term-missing", "--cov-report=html"],
@@ -347,6 +368,9 @@ def main():
     print("Testing AIHub API server with custom success/failure conditions")
     print("=" * 80)
     print()
+
+    # Create test directories as a safety measure
+    create_test_directories()
 
     exit_codes = []
 
